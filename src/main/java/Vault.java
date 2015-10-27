@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -16,7 +17,7 @@ public class Vault {
 
     public Vault(String vaultServer, String vaultToken) {
         this.vaultToken = vaultToken;
-        this.client = ClientBuilder.newClient();
+        this.client = ClientBuilder.newBuilder().register(JacksonJaxbJsonProvider.class).build();
         this.baseTarget = client.target(vaultServer);
     }
     public Vault(String vaultServer, String vaultToken, Client client) {
