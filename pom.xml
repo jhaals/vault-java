@@ -7,6 +7,9 @@
     <groupId>se.jhaals</groupId>
     <artifactId>vault-java</artifactId>
     <version>0.0.1</version>
+    <description>Java API for the Vault secret store</description>
+    <url>https://github.com/jhaals/vault-java</url>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -14,11 +17,18 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <scm>
         <url>https://github.com/jhaals/vault-java</url>
         <connection>scm:git:git@github.com:jhaals/vault-java.git</connection>
         <developerConnection>scm:git:git@github.com:jhaals/vault-java.git</developerConnection>
     </scm>
+
+    <issueManagement>
+        <system>Github issues</system>
+        <url>https://github.com/jhaals/vault-java/issues</url>
+    </issueManagement>
+
     <developers>
         <developer>
             <name>Johan Haals</name>
@@ -27,6 +37,7 @@
             <id>jhaals</id>
         </developer>
     </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -50,4 +61,37 @@
             <version>2.5.1</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.12</version>
+                <configuration>
+                    <message>Creating site for ${project.version}</message>
+                    <server>github</server>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>site</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
