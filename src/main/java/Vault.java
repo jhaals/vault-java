@@ -123,6 +123,56 @@ public class Vault {
         }
     }
 
+    /**
+     * Get seal status from Vault
+     * @return Status containing shares, progress, shards and seal status
+     * @throws VaultException on non 200 status codes
+     */
+    public Status getStatus() {
+
+        WebTarget target = baseTarget.path("/v1/sys/seal-status");
+        Response response = null;
+        try {
+            response = target.request()
+                    .accept("application/json")
+                    .header("X-Vault-Token", this.vaultToken)
+                    .get();
+            if (response.getStatus() != 200) {
+                ErrorResponse error = response.readEntity(ErrorResponse.class);
+                throw new VaultException(response.getStatus(), error.getErrors());
+            }
+            return response.readEntity(Status.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+    }
+
+    public static class Status {
+        private boolean sealed;
+        private int keyThreshold;
+        private int keyShares;
+        private int progress;
+
+        public boolean isSealed() {
+            return sealed;
+        }
+
+        @JsonProperty("t")
+        public int getKeyThreshold() {
+            return keyThreshold;
+        }
+        @JsonProperty("n")
+        public int getKeyShares() {
+            return keyShares;
+        }
+
+        public int getProgress() {
+            return progress;
+        }
+
+    }
     private static class ErrorResponse {
         @JsonProperty
         private List<String> errors;
