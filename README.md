@@ -1,7 +1,14 @@
 # vault-java
 Java implementation of the [Vault project](https://vaultproject.io/) HTTP API
 
-#### Example
+#### Install
+	<dependency>
+	 <groupId>se.jhaals</groupId>
+	 <artifactId>vault-java</artifactId>
+	 <version>0.0.1</version>
+	</dependency>
+
+#### Examples
 
 ##### Read
 
