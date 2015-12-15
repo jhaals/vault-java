@@ -53,4 +53,21 @@ public class VaultTest extends TestCase {
         assertEquals(vaultStatus.getProgress(), 0);
         assertEquals(vaultStatus.isSealed(), false);
     }
+
+    public void testLookupToken() throws Exception {
+       assertEquals(vault.lookupToken(this.token).getData().getDisplayName(), "root");
+    }
+
+    public void testCreateToken() throws Exception {
+        TokenCreateRequest tokenCreateRequest = new TokenCreateRequestBuilder()
+                .setDisplayName("foobar")
+                .setNumUses(5)
+                .setNoParent(true)
+                .createTokenRequest();
+        TokenResponse createResult = vault.createToken(tokenCreateRequest);
+        TokenResponse lookupResult = vault.lookupToken(createResult.getAuth().getClientToken());
+        assertEquals(lookupResult.getData().getDisplayName(), "token-foobar");
+        assertEquals(lookupResult.getData().getNumUses(), 5);
+        assertEquals(lookupResult.getData().getPolicies().get(0), "root");
+    }
 }

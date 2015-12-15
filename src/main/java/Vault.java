@@ -16,6 +16,7 @@ import java.util.List;
  * @see <a href="https://vaultproject.io/">https://vaultproject.io/</a>
  */
 public class Vault {
+
     private final String vaultToken;
     private final Client client;
     private WebTarget baseTarget;
@@ -147,6 +148,60 @@ public class Vault {
                 throw new VaultException(response.getStatus(), error.getErrors());
             }
             return response.readEntity(VaultStatus.class);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+    }
+
+    /**
+     * @param token to lookup
+     * @return TokenResponse where "data" contains token information
+     */
+    public TokenResponse lookupToken(String token) {
+        WebTarget target = baseTarget.path("/v1/auth/token/lookup/" + token);
+        Response response = null;
+        try {
+            response = target.request()
+                    .accept("application/json")
+                    .header("X-Vault-Token", this.vaultToken)
+                    .get();
+            if (response.getStatus() != 200) {
+                ErrorResponse error = response.readEntity(ErrorResponse.class);
+                throw new VaultException(response.getStatus(), error.getErrors());
+            }
+
+            return response.readEntity(TokenResponse.class);
+
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+    }
+
+    /**
+     * Create new Vault token used for requests
+     *
+     * @param tokenCreateRequest containing properties such as ttl, policies, ttl.
+     *                           It's easiest to use the TokenCreateRequestBuilder to generate request.
+     * @return TokenResponse containing new token properties
+     */
+    public TokenResponse createToken(TokenCreateRequest tokenCreateRequest) {
+        WebTarget target = baseTarget.path("/v1/auth/token/create");
+        Response response = null;
+        try {
+            response = target.request()
+                    .accept("application/json")
+                    .header("X-Vault-Token", this.vaultToken)
+                    .post(Entity.entity(tokenCreateRequest, MediaType.APPLICATION_JSON_TYPE));
+            if (response.getStatus() != 200) {
+                ErrorResponse error = response.readEntity(ErrorResponse.class);
+                throw new VaultException(response.getStatus(), error.getErrors());
+            }
+
+            return response.readEntity(TokenResponse.class);
         } finally {
             if (response != null) {
                 response.close();
