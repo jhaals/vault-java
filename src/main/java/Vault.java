@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Java API for Hashicorp's Vault project. A tool for managing secrets.
+ *
  * @see <a href="https://vaultproject.io/">https://vaultproject.io/</a>
  */
 public class Vault {
@@ -21,8 +22,9 @@ public class Vault {
 
     /**
      * Initialize Vault
+     *
      * @param vaultServer http address to vault server, example: http://127.0.0.1:8200
-     * @param vaultToken vault token used to authenticate requests
+     * @param vaultToken  vault token used to authenticate requests
      */
     public Vault(String vaultServer, String vaultToken) {
         this.vaultToken = vaultToken;
@@ -32,9 +34,10 @@ public class Vault {
 
     /**
      * Initialize Vault with custom Jersey HTTP client, for fine tuning and proxy configurations
+     *
      * @param vaultServer http address to vault server, example: http://127.0.0.1:8200
      * @param vaultToken  vault token used to authenticate requests
-     * @param client custom Jersey client
+     * @param client      custom Jersey client
      */
     public Vault(String vaultServer, String vaultToken, Client client) {
         this.vaultToken = vaultToken;
@@ -77,7 +80,7 @@ public class Vault {
      *               Multiple key/value pairs can be specified, and all will be returned on a read operation.
      *               The generic backend use 'value' as key
      * @throws VaultException if operation fails
-     * */
+     */
     public void write(String path, HashMap<String, String> secret) {
         WebTarget target = baseTarget.path(String.format("/v1/%s", path));
         Response response = null;
@@ -100,6 +103,7 @@ public class Vault {
 
     /**
      * Delete path from vault
+     *
      * @param path to be deleted
      * @throws VaultException containing error reason
      */
@@ -124,11 +128,12 @@ public class Vault {
     }
 
     /**
-     * Get seal status from Vault
-     * @return Status containing shares, progress, shards and seal status
+     * Get status from Vault
+     *
+     * @return VaultStatus containing shares, progress, shards and seal status
      * @throws VaultException on non 200 status codes
      */
-    public Status getStatus() {
+    public VaultStatus getStatus() {
 
         WebTarget target = baseTarget.path("/v1/sys/seal-status");
         Response response = null;
@@ -141,7 +146,7 @@ public class Vault {
                 ErrorResponse error = response.readEntity(ErrorResponse.class);
                 throw new VaultException(response.getStatus(), error.getErrors());
             }
-            return response.readEntity(Status.class);
+            return response.readEntity(VaultStatus.class);
         } finally {
             if (response != null) {
                 response.close();
@@ -149,30 +154,6 @@ public class Vault {
         }
     }
 
-    public static class Status {
-        private boolean sealed;
-        private int keyThreshold;
-        private int keyShares;
-        private int progress;
-
-        public boolean isSealed() {
-            return sealed;
-        }
-
-        @JsonProperty("t")
-        public int getKeyThreshold() {
-            return keyThreshold;
-        }
-        @JsonProperty("n")
-        public int getKeyShares() {
-            return keyShares;
-        }
-
-        public int getProgress() {
-            return progress;
-        }
-
-    }
     private static class ErrorResponse {
         @JsonProperty
         private List<String> errors;

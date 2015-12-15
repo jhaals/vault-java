@@ -7,10 +7,12 @@ public class VaultTest extends TestCase {
 
     private String token = System.getenv("VAULT_TOKEN");
     private Vault vault;
+
     @Before
     public void setUp() {
         this.vault = new Vault("http://127.0.0.1:8200", token);
     }
+
     public void testWrite() throws Exception {
 
         HashMap<String, String> data = new HashMap<>();
@@ -45,11 +47,10 @@ public class VaultTest extends TestCase {
     }
 
     public void testGetStatus() throws Exception {
-        Vault.Status status = vault.getStatus();
-        assertEquals(status.getKeyShares(), 1);
-        assertEquals(status.getKeyThreshold(), 1);
-        assertEquals(status.getProgress(), 0);
-        assertEquals(status.isSealed(), false);
+        VaultStatus vaultStatus = vault.getStatus();
+        assertEquals(vaultStatus.getKeyShares(), 1);
+        assertEquals(vaultStatus.getKeyThreshold(), 1);
+        assertEquals(vaultStatus.getProgress(), 0);
+        assertEquals(vaultStatus.isSealed(), false);
     }
-
 }
