@@ -1,3 +1,5 @@
+package se.jhaals;
+
 import junit.framework.TestCase;
 import org.junit.Before;
 
@@ -62,7 +64,7 @@ public class VaultTest extends TestCase {
     }
 
     public void testLookupToken() throws Exception {
-       assertEquals(vault.lookupToken(this.token).getData().getDisplayName(), "root");
+        assertEquals(vault.lookupToken(this.token).getData().getDisplayName(), "root");
     }
 
     public void testCreateToken() throws Exception {

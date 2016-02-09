@@ -1,3 +1,5 @@
+package se.jhaals;
+
 import java.util.List;
 
 public class VaultException extends RuntimeException {
