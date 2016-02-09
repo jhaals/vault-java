@@ -5,12 +5,16 @@ import java.util.HashMap;
 
 public class VaultTest extends TestCase {
 
-    private String token = System.getenv("VAULT_TOKEN");
+    private String token = "8bde0f8d-311c-7d96-0cb1-437cfaf6d2dc"; //System.getenv("VAULT_TOKEN");
+    private String vault_server_url = "http://192.168.99.101:8200";
     private Vault vault;
 
     @Before
     public void setUp() {
-        this.vault = new Vault("http://127.0.0.1:8200", token);
+        //this.vault = new Vault("http://127.0.0.1:8200", token);
+        System.out.println("TOKEN="+token);
+        this.vault = new Vault(vault_server_url, token);
+
     }
 
     public void testWrite() throws Exception {
@@ -37,7 +41,7 @@ public class VaultTest extends TestCase {
     }
 
     public void testReadWithInvalidToken() throws Exception {
-        Vault vault = new Vault("http://127.0.0.1:8200", "invalid");
+        Vault vault = new Vault(vault_server_url, "invalid");
         try {
             vault.read("secret/hello");
             fail("Expected VaultException");
@@ -48,6 +52,9 @@ public class VaultTest extends TestCase {
 
     public void testGetStatus() throws Exception {
         VaultStatus vaultStatus = vault.getStatus();
+
+        System.out.println(vaultStatus);
+
         assertEquals(vaultStatus.getKeyShares(), 1);
         assertEquals(vaultStatus.getKeyThreshold(), 1);
         assertEquals(vaultStatus.getProgress(), 0);
