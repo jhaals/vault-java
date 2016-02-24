@@ -2,13 +2,18 @@ package se.jhaals;
 
 import junit.framework.TestCase;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.Map;
+
+import static org.hamcrest.core.StringContains.containsString;
+
 
 public class VaultTest extends TestCase {
 
-    private String token = "8bde0f8d-311c-7d96-0cb1-437cfaf6d2dc"; //System.getenv("VAULT_TOKEN");
-    private String vault_server_url = "http://192.168.99.101:8200";
+    private String token = "1f52b415-ad60-3f85-a9a8-abb191fc1c8e"; //System.getenv("VAULT_TOKEN");
+    private String vault_server_url = "http://192.168.99.100:8200";
     private Vault vault;
 
     @Before
@@ -21,7 +26,7 @@ public class VaultTest extends TestCase {
 
     public void testWrite() throws Exception {
 
-        HashMap<String, String> data = new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         data.put("value", "hello");
         vault.write("secret/hello", data);
     }
@@ -29,23 +34,61 @@ public class VaultTest extends TestCase {
     public void testRead() throws Exception {
         VaultResponse result = vault.read("secret/hello");
         assertEquals(result.getData().get("value"), "hello");
+        System.out.println("TEST-Read:" + result.toString());
+    }
+
+    public void testReadCredentials() throws Exception {
+        VaultResponse result = vault.read("postgresql/creds/readonly");
+        assertTrue(result.getLeaseId().contains("postgresql/creds/readonly/"));
+        assertTrue(result.getRenewable());
+        assertEquals(result.getLeaseDuration(), "2592000");
+        assertNotNull(result.getData());
+        assertNotNull(result.getData().get("password"));
+        assertNotNull(result.getData().get("username"));
+        assertTrue(result.getData().get("username").contains("root-"));
+        System.out.println("Read Credentials:" + result.toString());
+    }
+
+    public void testRenewLeaseCredentials() throws Exception {
+        VaultResponse result = vault.read("postgresql/creds/readonly");
+
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("increment", "7200");
+
+        VaultResponse renewResponse = vault.renew(result.getLeaseId(), parameters);
+
+        assertEquals(result.getLeaseId(), renewResponse.getLeaseId());
+        assertEquals(renewResponse.getLeaseDuration(), "7200");
+    }
+
+    public void testRevokeLeaseCredentials() throws Exception {
+
+        VaultResponse result = vault.read("postgresql/creds/readonly");
+        vault.revoke(result.getLeaseId());
+
+        try{
+            vault.renew(result.getLeaseId(), new HashMap<>());
+        } catch (Exception e) {
+            assertTrue(e instanceof VaultException);
+        }
+
     }
 
     public void testDelete() throws Exception {
         vault.delete("secret/hello");
+        VaultResponse result = null;
         try {
-            vault.read("secret/hello");
-            fail("Expected VaultException");
+            result = vault.read("secret/hello");
         } catch (VaultException e) {
             assertEquals(e.getStatusCode(), 404);
-
         }
     }
 
     public void testReadWithInvalidToken() throws Exception {
         Vault vault = new Vault(vault_server_url, "invalid");
+        VaultResponse result = null;
         try {
-            vault.read("secret/hello");
+            result =  vault.read("secret/hello");
             fail("Expected VaultException");
         } catch (VaultException e) {
             assertEquals(e.getStatusCode(), 403);
