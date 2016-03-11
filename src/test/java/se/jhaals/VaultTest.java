@@ -2,24 +2,19 @@ package se.jhaals;
 
 import junit.framework.TestCase;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.core.StringContains.containsString;
-
 
 public class VaultTest extends TestCase {
 
-    private String token = "1f52b415-ad60-3f85-a9a8-abb191fc1c8e"; //System.getenv("VAULT_TOKEN");
+    private String token = "7efdbf54-cdb3-70bf-3b9e-96b52f0f50dd"; //System.getenv("VAULT_TOKEN");
     private String vault_server_url = "http://192.168.99.100:8200";
     private Vault vault;
 
     @Before
     public void setUp() {
-        //this.vault = new Vault("http://127.0.0.1:8200", token);
-        System.out.println("TOKEN="+token);
         this.vault = new Vault(vault_server_url, token);
 
     }
