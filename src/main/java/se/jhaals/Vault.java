@@ -1,3 +1,5 @@
+package se.jhaals;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
@@ -9,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Java API for Hashicorp's Vault project. A tool for managing secrets.
@@ -62,6 +65,8 @@ public class Vault {
                     .header("X-Vault-Token", this.vaultToken)
                     .get(Response.class);
             if (response.getStatus() == 200) {
+
+                //System.out.println("HTTP-Read:" + response.readEntity(String.class));
                 return response.readEntity(VaultResponse.class);
             }
             ErrorResponse error = response.readEntity(ErrorResponse.class);
@@ -82,7 +87,7 @@ public class Vault {
      *               The generic backend use 'value' as key
      * @throws VaultException if operation fails
      */
-    public void write(String path, HashMap<String, String> secret) {
+    public void write(String path, Map<String, String> secret) {
         WebTarget target = baseTarget.path(String.format("/v1/%s", path));
         Response response = null;
         try {
@@ -92,6 +97,67 @@ public class Vault {
                     .post(Entity.entity(secret, MediaType.APPLICATION_JSON_TYPE));
 
             if (response.getStatus() != 204) {
+                ErrorResponse error = response.readEntity(ErrorResponse.class);
+                throw new VaultException(response.getStatus(), error.getErrors());
+            }
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+    }
+
+    /**
+     * Renew lease for a secret.
+     *
+     * @param lease_id   Secret lease id
+     * @param parameters A key, paired with an associated value, to be held at the given location.
+     *               Multiple key/value pairs can be specified.
+     * @throws VaultException if operation fails
+     */
+    public VaultResponse renew(String lease_id, Map<String, String> parameters) {
+        WebTarget target = baseTarget.path(String.format("/v1/sys/renew/%s", lease_id));
+        Response response = null;
+        VaultResponse vaultResponse = null;
+        try {
+            response = target.request()
+                    .accept("application/json")
+                    .header("X-Vault-Token", this.vaultToken)
+                    .put(Entity.entity(parameters, MediaType.APPLICATION_JSON_TYPE));
+
+
+            if (response.getStatus() >= 400) {
+                ErrorResponse error = response.readEntity(ErrorResponse.class);
+                throw new VaultException(response.getStatus(), error.getErrors());
+            }
+
+            vaultResponse = response.readEntity(VaultResponse.class);
+
+        } finally {
+            if (response != null) {
+                response.close();
+            }
+        }
+
+        return vaultResponse;
+    }
+
+    /**
+     * Revoke a secret immediately.
+     *
+     * @param lease_id   secret lease id
+     * @throws VaultException if operation fails
+     */
+    public void revoke(String lease_id) {
+        WebTarget target = baseTarget.path(String.format("/v1/sys/revoke/%s", lease_id));
+        Response response = null;
+        try {
+            response = target.request()
+                    .accept("application/json")
+                    .header("X-Vault-Token", this.vaultToken)
+                    .put(Entity.entity(new HashMap<>(), MediaType.APPLICATION_JSON_TYPE));
+
+            if (response.getStatus() >= 400) {
                 ErrorResponse error = response.readEntity(ErrorResponse.class);
                 throw new VaultException(response.getStatus(), error.getErrors());
             }
